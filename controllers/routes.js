@@ -1,28 +1,30 @@
 const router = require("express").Router();
-const { read, save } = require("../helper/rw");
-const { v4: uuid_v4 } = require("uuid");
-const dbPath = "./db/beers.json"
+const Beer = require("../models/Beer");
 
 // TODO: POST api/create --> create beer
-router.post("/create", (req, res) => {
+// ! Challenge
+// * check if all values are presented
+// * pass them into the model
+// * save
+// * return result (aka serve a response)
+// * SPICEY MODE: try to pass brand as a number,
+// see what happens, see how you can alert us
+
+router.post("/create", async (req, res) => {
     try {
-        // generate new id
-        const id = uuid_v4();
-        // get all items from json file
-        let beerDB = read(dbPath);
-        //extrapolate the data from the request
-        // check if the body has content
-        if (Object.keys(req.body).length < 6) {
-            throw Error("Please provide all content")
+        const { brand, brewery, abv, country, style, size } = req.body
+        
+        if (!brand || !brewery || !abv || !country || !style || !size) {
+            throw Error("Incorrect schema data");
         }
-        // package new id and the req data into a single object
-        let newEntry = { id, ...req.body };
-        // push the new content into the db
-        beerDB.push(newEntry);
-        // write new changes to the .json file
-        save(beerDB, dbPath);
-        res.status(200).json({
-            message: "Beer added"
+        
+        const newBeer = new Beer({ brand, brewery, abv, country, style, size })
+
+        await newBeer.save();
+
+        res.status(201).json({
+            message: `Beer added`,
+            newBeer
         })
     } catch(err){
         res.status(500).json({
