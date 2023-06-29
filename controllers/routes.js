@@ -34,11 +34,14 @@ router.post("/create", async (req, res) => {
 })
 // TODO: GET api/ --> all beers
 
-router.get("/allbeers", (req, res) => {
+router.get("/allbeers", async (req, res) => {
     try{
-        const allBeers = read(dbPath);
+        console.log(req.user)
+        const findAll = await Beer.find({});
+        if (findAll.length === 0) throw Error("no entries found");
+
         res.status(200).json({
-            allBeers
+            findAll
         })
     } catch(err) {
         console.log(err)
@@ -48,15 +51,10 @@ router.get("/allbeers", (req, res) => {
     }
 })
 // TODO: GET api/:id --> get one beer
-router.get("/:id", (req, res) => {
+router.get("/:id", async (req, res) => {
     try{
-        // destructure the id value from the request
-        const { id } = req.params;
-        // get your json file contents
-        const db = read(dbPath);
-        // find matching id
-        const foundBeer = db.find(beer => beer.id === id);
-
+        const { id: _id } = req.params
+        const foundBeer = await Beer.findOne({ _id })
         if (!foundBeer) throw Error("Beer not found")
 
         res.status(200).json(foundBeer)
@@ -68,22 +66,16 @@ router.get("/:id", (req, res) => {
 
 })
 // TODO: PUT api/update/:id --> edit one beer
-router.put("/:id", (req, res) => {
+router.put("/update/:id", async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id: _id } = req.params;
         
-        const db = read(dbPath);
+        const newBeer= req.body;
         
-        const foundBeer = db.find(beer => beer.id === id);
+        const updatedBeer = await Beer.updateOne({ _id} , { $set: newBeer });
         
-        if (!foundBeer) throw Error("Beer not found")
+        if (updatedBeer.matchedCount === 0) throw Error("ID not found");
         
-        let update = { id, ...req.body };
-        let index = db.indexOf(foundBeer);
-        db.splice(index, 1, update);
-
-        save(db, dbPath);
-
         res.status(200).json({
             message: "Beer updated"
         })
@@ -95,19 +87,13 @@ router.put("/:id", (req, res) => {
 })
 // TODO: DELETE api/delete/:id --> delete one beer
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
     try {
-        const { id } = req.params;
-        
-        const db = read(dbPath);
-        
-        const foundBeer = db.find(beer => beer.id === id);
-        
-        if (!foundBeer) throw Error("Beer not found")
-        
-        let removed = db.filter(beer => beer !== foundBeer);
+        const { id: _id } = req.params;
 
-        save(removed, dbPath);
+        const deleteBeer = await Beer.findByIdAndDelete({ _id })
+
+        if (!deleteBeer) throw Error("ID not found")
 
         res.status(200).json({
             message: "Beer deleted"

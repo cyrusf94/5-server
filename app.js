@@ -9,12 +9,13 @@ const HOST = process.env.HOST || "127.0.0.1";
 
 const authController = require("./controllers/auth");
 const beerController = require("./controllers/routes");
+const sessionValidation = require("./middleware/session")
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.use("/auth", authController);
-app.use("/api", beerController);
+app.use("/api", sessionValidation, beerController);
 
 app.listen(PORT, HOST, () => {
     dbConnect();
