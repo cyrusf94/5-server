@@ -1,0 +1,18 @@
+.form-wrapper {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#register {
+    border: 1px solid #8b97a3;
+    padding: 1px;
+    background-color: #1e3146;
+    border-radius: 5px;
+}
+
+#register:hover {
+    background-color: #46586b;
+    cursor: pointer;
+}
